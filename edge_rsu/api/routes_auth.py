@@ -15,7 +15,6 @@ from sqlalchemy.future import select
 from passlib.context import CryptContext
 
 from edge_rsu.database.connection import get_db
-from edge_rsu.database.models import User
 from edge_rsu.auth.jwt_handler import create_access_token
 
 logger = logging.getLogger(__name__)
@@ -51,6 +50,7 @@ def get_password_hash(password):
 @router.post("/register", response_model=AuthResponse)
 async def register(req: UserRegisterRequest, db: AsyncSession = Depends(get_db)):
     """Register a new user."""
+    from edge_rsu.database.models import User
     # Check existing
     result = await db.execute(select(User).where(User.username == req.username))
     if result.scalars().first():
@@ -90,6 +90,7 @@ async def register(req: UserRegisterRequest, db: AsyncSession = Depends(get_db))
 @router.post("/login", response_model=AuthResponse)
 async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Authenticate user and return JWT."""
+    from edge_rsu.database.models import User
     # Check DB
     result = await db.execute(select(User).where(User.username == req.username))
     user = result.scalars().first()

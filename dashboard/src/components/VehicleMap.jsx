@@ -1,0 +1,82 @@
+/**
+ * SmartV2X-CP Ultra — Live Vehicle Map
+ * Leaflet map with auto-updating vehicle markers color-coded by risk.
+ */
+import React, { useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
+import L from 'leaflet';
+
+// Fix default marker icons in bundled environments
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+const RISK_COLORS = {
+    HIGH: '#ef4444',
+    MEDIUM: '#f59e0b',
+    LOW: '#10b981',
+};
+
+function VehicleMarkers({ vehicles }) {
+    return (
+        <>
+            {Object.values(vehicles).map((v) => {
+                const lat = v.position?.latitude || v.position?.lat || 0;
+                const lon = v.position?.longitude || v.position?.lon || 0;
+                if (!lat && !lon) return null;
+
+                const riskLevel = v.risk?.level || 'LOW';
+                const color = RISK_COLORS[riskLevel] || RISK_COLORS.LOW;
+
+                return (
+                    <CircleMarker
+                        key={v.vehicle_id || v.id}
+                        center={[lat, lon]}
+                        radius={10}
+                        pathOptions={{
+                            fillColor: color,
+                            fillOpacity: 0.8,
+                            color: color,
+                            weight: 2,
+                            opacity: 1,
+                        }}
+                    >
+                        <Popup>
+                            <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
+                                <strong>{v.vehicle_id || 'Unknown'}</strong>
+                                <br />
+                                Status: {v.status || 'N/A'}
+                                <br />
+                                Risk: <span style={{ color, fontWeight: 600 }}>{riskLevel}</span>
+                                <br />
+                                Speed: {v.state?.speed?.toFixed(1) || '0'} m/s
+                                <br />
+                                Lat: {lat.toFixed(5)}, Lon: {lon.toFixed(5)}
+                            </div>
+                        </Popup>
+                    </CircleMarker>
+                );
+            })}
+        </>
+    );
+}
+
+export default function VehicleMap({ vehicles = {} }) {
+    const defaultCenter = [28.6139, 77.209];
+    const defaultZoom = 13;
+
+    return (
+        <div className="map-container">
+            <MapContainer center={defaultCenter} zoom={defaultZoom} style={{ height: '100%', width: '100%' }}>
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <VehicleMarkers vehicles={vehicles} />
+            </MapContainer>
+        </div>
+    );
+}

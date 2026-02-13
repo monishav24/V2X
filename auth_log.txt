@@ -1,7 +1,0 @@
---- Testing routes_auth import ---
-Traceback (most recent call last):
-  File "C:\Users\mv240\.vscode\sdp\test_routes_auth.py", line 10, in <module>
-    from edge_rsu.api import routes_auth
-  File "C:\Users\mv240\.vscode\sdp\edge_rsu\api\routes_auth.py", line 17, in <module>
-    from edge_rsu.database.connection import get_db
-ImportError: cannot import name 'get_db' from 'edge_rsu.database.connection' (C:\Users\mv240\.vscode\sdp\edge_rsu\database\connection.py)
